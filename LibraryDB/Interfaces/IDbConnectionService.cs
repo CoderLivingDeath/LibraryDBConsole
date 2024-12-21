@@ -6,6 +6,7 @@ namespace LibraryApp.Interfaces
     {
         bool ConnectionIsOpen();
         void CloseConnection();
+        void SetNewConnection(string connectionString);
         IDbConnection GetConnetion();
         void OpenConnection();
     }

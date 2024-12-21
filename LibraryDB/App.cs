@@ -7,6 +7,7 @@ using LibraryApp.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
+using System.Threading.Channels;
 
 namespace LibraryDB
 {
@@ -20,22 +21,10 @@ namespace LibraryDB
 
         private IServiceProvider _serviceProvider;
 
-        public class AppConfiguration
-        {
-            private readonly string _connectionString;
-
-            public AppConfiguration(string connectionString)
-            {
-                _connectionString = connectionString;
-            }
-
-            public string GetConnectionString() => _connectionString;
-        }
-
-        public App(AppConfiguration configuration)
+        public App(string connectionString)
         {
             _services = new ServiceCollection();
-            _connectionString = configuration.GetConnectionString();
+            _connectionString = connectionString;
         }
 
         public void Start()
@@ -63,6 +52,7 @@ namespace LibraryDB
 
             var dbConntection = new DbConnectionService(_connectionString);
             services.AddSingleton<IDbConnectionService, DbConnectionService>(h => dbConntection);
+            services.AddSingleton<DbConnectionProvider>();
 
             services.AddSingleton<IRepository<Client>, ClientRepository>();
             services.AddSingleton<IRepository<Employee>, EmployeeRepository>();

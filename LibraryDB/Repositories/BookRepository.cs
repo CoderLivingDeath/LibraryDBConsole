@@ -1,4 +1,5 @@
-﻿using LibraryApp.Models.Data;
+﻿using LibraryApp.Infrastructure;
+using LibraryApp.Models.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,8 +11,8 @@ namespace LibraryApp.Repositories
 {
     public class BookRepository : IRepository<Book>
     {
-        private IDbConnection _connection;
-        public BookRepository(IDbConnection connection)
+        private DbConnectionProvider _connection;
+        public BookRepository(DbConnectionProvider connection)
         {
             _connection = connection;
         }

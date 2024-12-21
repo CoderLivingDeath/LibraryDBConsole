@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using LibraryApp.Interfaces;
 
@@ -10,28 +11,49 @@ namespace LibraryApp.Services
 {
     public class DbConnectionService : IDbConnectionService
     {
-        private IDbConnection _activeConnection;
+        private IDbConnection? _сonnection;
+        private string _connectionString;
+
+        public DbConnectionService()
+        {
+
+        }
 
         public DbConnectionService(string connectionString)
         {
-            _activeConnection = new MySqlConnector.MySqlConnection(connectionString);
+            _connectionString = connectionString;
+            _сonnection = new MySqlConnector.MySqlConnection(connectionString);
         }
 
         public void OpenConnection()
         {
-            _activeConnection.Open();
+            if (_connectionString == null) throw new ArgumentNullException();
+            _сonnection?.Open();
         }
 
         public void CloseConnection()
         {
-            _activeConnection.Close();
+            if (_connectionString == null) throw new ArgumentNullException();
+            _сonnection?.Close();
+        }
+
+        public void SetNewConnection(string connectionString)
+        {
+            CloseConnection();
+            _сonnection?.Dispose();
+            _connectionString = connectionString;
+            _сonnection = new MySqlConnector.MySqlConnection(connectionString);
         }
 
         public IDbConnection GetConnetion()
         {
-            return _activeConnection;
+            return _сonnection != null ? _сonnection : throw new ArgumentNullException();
         }
 
-        public bool ConnectionIsOpen() => _activeConnection.State == ConnectionState.Open;
+        public bool ConnectionIsOpen()
+        {
+            if (_connectionString == null) throw new ArgumentNullException();
+            return _сonnection?.State == ConnectionState.Open;
+        }
     }
 }
