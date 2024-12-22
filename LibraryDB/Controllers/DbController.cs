@@ -21,6 +21,60 @@ namespace LibraryApp.Controllers
             _logService = logService;
         }
 
+        public Result ChangeDataBase(string dbName)
+        {
+            string oldDatabaseName = _connectionService.GetConnetion().Database;
+            try
+            {
+                _connectionService.ChangeDataBase(dbName);
+
+                _logService.LogMessage($"Change database from {oldDatabaseName} to {dbName}.", typeof(DbController));
+
+                return new Result()
+                {
+                    Status = ResultStatus.Success,
+                    ErrorMessage = null
+                };
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError($"error change database from {oldDatabaseName} to {dbName}.", typeof(DbController), ex);
+
+                return new Result()
+                {
+                    ErrorMessage = ex.Message,
+                    Status = ResultStatus.Error,
+                };
+            }
+        }
+
+        public Result<IEnumerable<string>> GetAllDatabaseNames()
+        {
+            try
+            {
+                var names = _connectionService.GetAllDataBaseNames();
+
+                _logService.LogMessage("get all database names.", typeof(DbController));
+
+                return new Result<IEnumerable<string>>()
+                {
+                    Value = names,
+                    Status = ResultStatus.Success,
+                    ErrorMessage = null
+                };
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError("error on get all database names.", typeof(DbController), ex);
+
+                return new Result<IEnumerable<string>>()
+                {
+                    ErrorMessage = ex.Message,
+                    Status = ResultStatus.Error,
+                };
+            }
+        }
+
         public Result<ConnectionStatus> GetConnectionStatus()
         {
             try
@@ -31,7 +85,7 @@ namespace LibraryApp.Controllers
                 string database = connection.Database;
                 string ConnectionTimeout = connection.ConnectionTimeout.ToString();
 
-                ConnectionStatus status = new ConnectionStatus(connectionState,connectionString, database, ConnectionTimeout);
+                ConnectionStatus status = new ConnectionStatus(connectionState, connectionString, database, ConnectionTimeout);
 
                 _logService.LogMessage($"Get connection status.", typeof(DbController));
 

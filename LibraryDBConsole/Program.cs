@@ -13,7 +13,7 @@ namespace LibraryDBConsole
         static void Main(string[] args)
         {
             MainView view = new MainView();
-            App app = new App("server=127.0.0.1;uid = root; pwd=26569; database=sys");
+            App app = new App("server=127.0.0.1;uid = root; pwd=26569; database=library");
 
             view.Initialize(app, true);
         }

@@ -1,6 +1,7 @@
 ﻿using LibraryApp;
 using LibraryApp.Controllers;
 using LibraryApp.Interfaces;
+using LibraryApp.Models.Data;
 using LibraryApp.Services;
 using LibraryDB;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,18 +48,96 @@ namespace LibraryDBConsole
             commands.Add("openconnection", OpenConnectionHandler);
             commands.Add("closeconnection", CloseConnectionHandler);
             commands.Add("setconnection", SetConnectionHandler);
+            commands.Add("getalldbnames", GetAlldbNames);
+            commands.Add("changedb", ChangeDataBase);
+
+            commands.Add("getallclients", GetAllClients);
 
             commands.Add("help", ShowHelpHandler);
 
             _commands = commands;
         }
 
-        private void SetConnectionHandler(IServiceProvider provider, string[] args)
+        private void GetAllClients(IServiceProvider provider, string[] arg2)
+        {
+            LibraryController? libraryController = provider.GetService<LibraryController>();
+            if (libraryController == null) throw new Exception();
+
+            Result<IEnumerable<Client>> result = libraryController.GetAllClients();
+            if (result.Status == ResultStatus.Error)
+            {
+                Console.WriteLine("===Error===");
+                Console.WriteLine(result.ErrorMessage);
+                return;
+            }
+
+            List<string[]> rowsList = new List<string[]>();
+
+            foreach (var client in result.Value)
+            {
+                string[] row = new string[] { client.Id.ToString(), client.FirstName, client.SecondName, client.PhoneNumber};
+                rowsList.Add(row);
+            }
+
+            string[] headers = new string[4] { "id", "FirstName", "SecondName", "PhoneNumber" };
+            string[][] rows = rowsList.ToArray();
+
+            ConsoleHelper.ShowTable(headers, rows);
+        }
+
+        private void ChangeDataBase(IServiceProvider provider, string[] args)
+        {
+            var dbname = args[0];
+            if (dbname == null && dbname == string.Empty)
+            {
+                Console.WriteLine($"неверные аргументы: {dbname}.");
+                return;
+            }
+
+            DbController? dbController = provider.GetService<DbController>();
+            if (dbController == null) throw new Exception();
+
+            Result result = dbController.ChangeDataBase(args[0]);
+
+            if (result.Status == ResultStatus.Error)
+            {
+                Console.WriteLine("===Error===");
+                Console.WriteLine(result.ErrorMessage);
+            }
+        }
+
+        private void GetAlldbNames(IServiceProvider provider, string[] arg2)
         {
             DbController? dbController = provider.GetService<DbController>();
             if (dbController == null) throw new Exception();
 
-            Result result = dbController.SetNewConnection(args[0]);
+            Result<IEnumerable<string>> result = dbController.GetAllDatabaseNames();
+
+            foreach (var name in result.Value)
+            {
+                Console.WriteLine(name);
+            }
+
+            if (result.Status == ResultStatus.Error)
+            {
+                Console.WriteLine("===Error===");
+                Console.WriteLine(result.ErrorMessage);
+            }
+        }
+
+        private void SetConnectionHandler(IServiceProvider provider, string[] args)
+        {
+            var connectionString = args[0];
+            if (connectionString == null && connectionString == string.Empty)
+            {
+                Console.WriteLine($"неверные аргументы: {connectionString}.");
+                return;
+            }
+
+            DbController? dbController = provider.GetService<DbController>();
+            if (dbController == null) throw new Exception();
+
+            Result result = dbController.SetNewConnection(connectionString);
 
             if (result.Status == ResultStatus.Error)
             {
@@ -74,7 +153,7 @@ namespace LibraryDBConsole
 
             Result result = dbController.CloseConnection();
 
-            if(result.Status == ResultStatus.Error)
+            if (result.Status == ResultStatus.Error)
             {
                 Console.WriteLine("==Error==");
                 Console.WriteLine(result.ErrorMessage);
@@ -86,7 +165,7 @@ namespace LibraryDBConsole
             DbController? dbController = provider.GetService<DbController>();
             if (dbController == null) throw new Exception();
 
-            Result result =dbController.OpenConnection();
+            Result result = dbController.OpenConnection();
             if (result.Status == ResultStatus.Error)
             {
                 Console.WriteLine("==Error==");
@@ -101,7 +180,7 @@ namespace LibraryDBConsole
 
         private void DebugSwich(IServiceProvider provider, string[] args)
         {
-            if(_onDebug)
+            if (_onDebug)
             {
                 DisableDebug();
                 Console.WriteLine("[Выключен режим DEBUG]");
@@ -132,7 +211,7 @@ namespace LibraryDBConsole
 
             Result<ConnectionStatus> result = dbController.GetConnectionStatus();
 
-            if(result.Status == ResultStatus.Error)
+            if (result.Status == ResultStatus.Error)
             {
                 Console.WriteLine("===error===");
                 Console.WriteLine(result.ErrorMessage);
@@ -163,7 +242,7 @@ namespace LibraryDBConsole
         private void HandleMessage(Message message)
         {
             var command = message.Text.Trim().Split().First().ToLower();
-            
+
             var args = message.Text.Trim().Split().Skip(1).ToArray();
 
             if (_commands.TryGetValue(command, out Action<IServiceProvider, string[]>? action))

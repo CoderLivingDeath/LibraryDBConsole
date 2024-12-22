@@ -1,12 +1,6 @@
 ﻿using LibraryApp.Infrastructure;
 using LibraryApp.Models.Data;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using Dapper;
 namespace LibraryApp.Repositories
 {
     public class ClientRepository : IRepository<Client>
@@ -16,29 +10,42 @@ namespace LibraryApp.Repositories
         {
             _connection = connection;
         }
+
         public void Delete(int id)
         {
-            throw new NotImplementedException();
+            string query = "DELETE FROM Clients WHERE Id = @Id";
+            _connection.GetConnection().Execute(query, new { Id = id });
         }
 
-        void IRepository<Client>.Create(Client entity)
+        public void Create(Client entity)
         {
-            throw new NotImplementedException();
+            string query = "INSERT INTO Client (FirstName, SecondName, PhoneNumber) VALUES (@FirstName, @SecondName, @PhoneNumber)";
+            _connection.GetConnection().Execute(query, entity);
         }
 
-        IEnumerable<Client> IRepository<Client>.ReadAll()
+        public IEnumerable<Client> ReadAll()
         {
-            throw new NotImplementedException();
+            string query = "SELECT * FROM Client";
+            return _connection.GetConnection().Query<Client>(query);
         }
 
-        Client IRepository<Client>.ReadById(int id)
+        public Client ReadById(int id)
         {
-            throw new NotImplementedException();
+            string query = "SELECT * FROM Client WHERE Id = @Id";
+            var client = _connection.GetConnection().QueryFirstOrDefault<Client>(query, new { Id = id });
+
+            if (client == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            return client;
         }
 
-        void IRepository<Client>.Update(Client entity)
+        public void Update(Client entity)
         {
-            throw new NotImplementedException();
+            string query = $"UPDATE Client SET FirstName = {entity.FirstName}, SecondName = {entity.SecondName}, PhoneNumber = {entity.PhoneNumber} WHERE Id = @Id";
+            _connection.GetConnection().Execute(query, entity);
         }
     }
 }

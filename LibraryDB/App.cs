@@ -54,12 +54,15 @@ namespace LibraryDB
             services.AddSingleton<IDbConnectionService, DbConnectionService>(h => dbConntection);
             services.AddSingleton<DbConnectionProvider>();
 
+
             services.AddSingleton<IRepository<Client>, ClientRepository>();
             services.AddSingleton<IRepository<Employee>, EmployeeRepository>();
             services.AddSingleton<IRepository<Book>, BookRepository>();
             services.AddSingleton<IRepository<Catalog>, CatalogRepository>();
             services.AddSingleton<IRepository<Company>, CompanyRepository>();
             services.AddSingleton<IRepository<OrderForm>, OrderFormRepository>();
+
+            services.AddSingleton<LibraryService.LibraryRepositories>();
 
             services.AddSingleton<ILibraryService, LibraryService>();
         }

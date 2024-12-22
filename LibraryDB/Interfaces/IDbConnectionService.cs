@@ -9,5 +9,8 @@ namespace LibraryApp.Interfaces
         void SetNewConnection(string connectionString);
         IDbConnection GetConnetion();
         void OpenConnection();
+        void ChangeDataBase(string dbName);
+        IEnumerable<string> GetAllDataBaseNames();
+
     }
 }
